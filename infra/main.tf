@@ -103,12 +103,6 @@ resource "aws_api_gateway_deployment" "deployment" {
 # Cria o bucket S3 para hospedar o frontend
 resource "aws_s3_bucket" "frontend" {
   bucket = var.s3_bucket_name  # Substitua por um nome de bucket único globalmente
-  acl    = "public-read"
-
-  website {
-    index_document = "index.html"
-    error_document = "index.html"
-  }
 
   tags = {
     Name        = "PediAssistFrontend"
@@ -135,6 +129,33 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
 }
 
 # -----------------------------
+# Configuração de Website do S3
+# -----------------------------
+
+# Configuração de website para o bucket S3
+resource "aws_s3_bucket_website_configuration" "frontend_website" {
+  bucket = aws_s3_bucket.frontend.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
+}
+
+# -----------------------------
+# Configuração de ACL do S3
+# -----------------------------
+
+# Define a ACL para o bucket S3
+resource "aws_s3_bucket_acl" "frontend_acl" {
+  bucket = aws_s3_bucket.frontend.id
+  acl    = "public-read"
+}
+
+# -----------------------------
 # Automatização do Upload do index.html
 # -----------------------------
 
@@ -147,13 +168,13 @@ data "template_file" "index_html" {
   }
 }
 
-# Upload do index.html gerado para o bucket S3
-resource "aws_s3_bucket_object" "index_html" {
-  bucket        = aws_s3_bucket.frontend.bucket
-  key           = "index.html"
-  content       = data.template_file.index_html.rendered
-  acl           = "public-read"
-  content_type  = "text/html"
+# Upload do index.html gerado para o bucket S3 usando aws_s3_object
+resource "aws_s3_object" "index_html" {
+  bucket       = aws_s3_bucket.frontend.bucket
+  key          = "index.html"
+  content      = data.template_file.index_html.rendered
+  acl          = "public-read"
+  content_type = "text/html"
 
   depends_on = [aws_api_gateway_deployment.deployment]
 }
