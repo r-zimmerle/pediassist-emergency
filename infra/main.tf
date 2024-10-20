@@ -1,6 +1,30 @@
 # infra/main.tf
 
 # -----------------------------
+# Variáveis (se ainda não estiverem definidas em variables.tf)
+# -----------------------------
+
+variable "lambda_function_name" {
+  default = "pediassist_emergencial_function"
+}
+
+variable "api_name" {
+  default = "PediAssistAPI"
+}
+
+variable "s3_bucket_name" {
+  default = "pediassist-frontend-bucket-unique-name"  # Substitua por um nome de bucket único globalmente
+}
+
+# -----------------------------
+# Provedor AWS (se não estiver em providers.tf)
+# -----------------------------
+
+provider "aws" {
+  region = "us-east-1"  # Substitua pela região desejada
+}
+
+# -----------------------------
 # IAM Role e Políticas para a Função Lambda
 # -----------------------------
 
@@ -110,6 +134,16 @@ resource "aws_s3_bucket" "frontend" {
   }
 }
 
+# Configura as configurações de Block Public Access do bucket S3
+resource "aws_s3_bucket_public_access_block" "frontend_public_access_block" {
+  bucket = aws_s3_bucket.frontend.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
 # Define a política do bucket para permitir acesso público de leitura
 resource "aws_s3_bucket_policy" "frontend_policy" {
   bucket = aws_s3_bucket.frontend.id
@@ -126,11 +160,9 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
       }
     ]
   })
-}
 
-# -----------------------------
-# Configuração de Website do S3
-# -----------------------------
+  depends_on = [aws_s3_bucket_public_access_block.frontend_public_access_block]
+}
 
 # Configuração de website para o bucket S3
 resource "aws_s3_bucket_website_configuration" "frontend_website" {
@@ -145,36 +177,44 @@ resource "aws_s3_bucket_website_configuration" "frontend_website" {
   }
 }
 
-# -----------------------------
-# Configuração de ACL do S3
-# -----------------------------
-
 # Define a ACL para o bucket S3
 resource "aws_s3_bucket_acl" "frontend_acl" {
   bucket = aws_s3_bucket.frontend.id
   acl    = "public-read"
+
+  depends_on = [aws_s3_bucket_public_access_block.frontend_public_access_block]
 }
 
 # -----------------------------
 # Automatização do Upload do index.html
 # -----------------------------
 
-# Recurso para processar o template do index.html
-data "template_file" "index_html" {
-  template = file("${path.module}/../frontend/index.html.tmpl")
-
-  vars = {
-    api_endpoint = aws_api_gateway_deployment.deployment.invoke_url
-  }
-}
-
 # Upload do index.html gerado para o bucket S3 usando aws_s3_object
 resource "aws_s3_object" "index_html" {
   bucket       = aws_s3_bucket.frontend.bucket
   key          = "index.html"
-  content      = data.template_file.index_html.rendered
+  content      = templatefile("${path.module}/../frontend/index.html.tmpl", {
+    api_endpoint = aws_api_gateway_deployment.deployment.invoke_url
+  })
   acl          = "public-read"
   content_type = "text/html"
 
-  depends_on = [aws_api_gateway_deployment.deployment]
+  depends_on = [
+    aws_api_gateway_deployment.deployment,
+    aws_s3_bucket_public_access_block.frontend_public_access_block,
+    aws_s3_bucket_acl.frontend_acl,
+    aws_s3_bucket_policy.frontend_policy
+  ]
+}
+
+# -----------------------------
+# Outputs
+# -----------------------------
+
+output "api_endpoint" {
+  value = aws_api_gateway_deployment.deployment.invoke_url
+}
+
+output "s3_website_url" {
+  value = aws_s3_bucket.frontend.website_endpoint
 }
