@@ -1,15 +1,21 @@
+# infra/variables.tf
+
 variable "aws_region" {
-  default = "us-east-1"  # Substitua pela região desejada
+  description = "Região AWS onde os recursos serão provisionados"
+  default     = "us-east-1"  # Substitua pela região desejada
 }
 
 variable "lambda_function_name" {
-  default = "pediassist_emergencial_function"
+  description = "Nome da função Lambda"
+  default     = "pediassist_emergencial_function"
 }
 
 variable "api_name" {
-  default = "PediAssistAPI"
+  description = "Nome da API Gateway"
+  default     = "PediAssistAPI"
 }
 
 variable "s3_bucket_name" {
-  default = "pediassist-frontend-bucket-unique-name"  # Certifique-se de que seja único globalmente
+  description = "Nome único do bucket S3 para o frontend"
+  default     = "pediassist-frontend-bucket-unique-name"  # Certifique-se de que seja único globalmente
 }
