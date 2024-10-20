@@ -1,11 +1,11 @@
-# outputs.tf
+# infra/outputs.tf
 
 output "api_endpoint" {
-  value       = "${aws_api_gateway_deployment.deployment.invoke_url}"
-  description = "Endpoint da API do PediAssist Emergencial"
+  description = "Endpoint da API Gateway"
+  value       = aws_api_gateway_deployment.deployment.invoke_url
 }
 
 output "s3_website_url" {
-  value       = "http://${aws_s3_bucket.frontend.bucket}.s3-website-${var.aws_region}.amazonaws.com"
-  description = "URL do site hospedado no S3"
+  description = "URL do website hospedado no S3"
+  value       = aws_s3_bucket.frontend.bucket_regional_domain_name
 }

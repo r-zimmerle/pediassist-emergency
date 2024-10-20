@@ -17,7 +17,7 @@
     <div id="resultado"></div>
 
     <script>
-        const apiEndpoint = "${api_endpoint}";
+        const apiEndpoint = "${apiEndpoint}";
 
         document.getElementById('form-calculo').addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -34,7 +34,7 @@
                 let resultadoDiv = document.getElementById('resultado');
                 resultadoDiv.innerHTML = '<h2>Doses Calculadas:</h2>';
                 for (let [medicamento, dose] of Object.entries(data.doses)) {
-                    resultadoDiv.innerHTML += `<p><strong>${"$"}{medicamento}:</strong> ${"$"}{dose.toFixed(2)} ml (${"$"}{data.diluicoes[medicamento]})</p>`;
+                    resultadoDiv.innerHTML += `<p><strong>${"$"}{medicamento}:</strong> ${"$"}{dose.toFixed(2)} ml (${ "$"}{data.diluicoes[medicamento]})</p>`;
                 }
             } else {
                 // Exibe mensagem de erro

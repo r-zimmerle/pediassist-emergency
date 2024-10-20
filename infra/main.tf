@@ -1,30 +1,6 @@
 # infra/main.tf
 
 # -----------------------------
-# Variáveis (se ainda não estiverem definidas em variables.tf)
-# -----------------------------
-
-variable "lambda_function_name" {
-  default = "pediassist_emergencial_function"
-}
-
-variable "api_name" {
-  default = "PediAssistAPI"
-}
-
-variable "s3_bucket_name" {
-  default = "pediassist-frontend-bucket-unique-name"  # Substitua por um nome de bucket único globalmente
-}
-
-# -----------------------------
-# Provedor AWS (se não estiver em providers.tf)
-# -----------------------------
-
-provider "aws" {
-  region = "us-east-1"  # Substitua pela região desejada
-}
-
-# -----------------------------
 # IAM Role e Políticas para a Função Lambda
 # -----------------------------
 
@@ -35,8 +11,8 @@ resource "aws_iam_role" "lambda_exec_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRole",
-      Effect = "Allow",
+      Action    = "sts:AssumeRole",
+      Effect    = "Allow",
       Principal = {
         Service = "lambda.amazonaws.com"
       }
@@ -177,14 +153,6 @@ resource "aws_s3_bucket_website_configuration" "frontend_website" {
   }
 }
 
-# Define a ACL para o bucket S3
-resource "aws_s3_bucket_acl" "frontend_acl" {
-  bucket = aws_s3_bucket.frontend.id
-  acl    = "public-read"
-
-  depends_on = [aws_s3_bucket_public_access_block.frontend_public_access_block]
-}
-
 # -----------------------------
 # Automatização do Upload do index.html
 # -----------------------------
@@ -194,15 +162,13 @@ resource "aws_s3_object" "index_html" {
   bucket       = aws_s3_bucket.frontend.bucket
   key          = "index.html"
   content      = templatefile("${path.module}/../frontend/index.html.tmpl", {
-    api_endpoint = aws_api_gateway_deployment.deployment.invoke_url
+    apiEndpoint = aws_api_gateway_deployment.deployment.invoke_url
   })
-  acl          = "public-read"
   content_type = "text/html"
 
   depends_on = [
     aws_api_gateway_deployment.deployment,
     aws_s3_bucket_public_access_block.frontend_public_access_block,
-    aws_s3_bucket_acl.frontend_acl,
     aws_s3_bucket_policy.frontend_policy
   ]
 }
