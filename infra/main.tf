@@ -1,4 +1,4 @@
-# main.tf
+# infra/main.tf
 
 # -----------------------------
 # IAM Role e Políticas para a Função Lambda
@@ -34,17 +34,15 @@ resource "aws_lambda_function" "calc_function" {
   filename         = "../function.zip"  # Caminho para o arquivo zip da função Lambda
   function_name    = var.lambda_function_name
   handler          = "lambda_function.lambda_handler"  # Nome do arquivo e função handler
-  runtime          = "python3.10"  # Python 3.8
+  runtime          = "python3.10"  # Python 3.10
   role             = aws_iam_role.lambda_exec_role.arn
 
   source_code_hash = filebase64sha256("../function.zip")  # Garante que o código seja atualizado quando o zip mudar
 
-  # Variáveis de ambiente (se necessário)
-  # environment {
-  #   variables = {
-  #     VARIAVEL = "valor"
-  #   }
-  # }
+  tags = {
+    Name        = "PediAssistFunction"
+    Environment = "Production"
+  }
 }
 
 # -----------------------------
@@ -134,4 +132,28 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
       }
     ]
   })
+}
+
+# -----------------------------
+# Automatização do Upload do index.html
+# -----------------------------
+
+# Recurso para processar o template do index.html
+data "template_file" "index_html" {
+  template = file("${path.module}/../frontend/index.html.tmpl")
+
+  vars = {
+    api_endpoint = aws_api_gateway_deployment.deployment.invoke_url
+  }
+}
+
+# Upload do index.html gerado para o bucket S3
+resource "aws_s3_bucket_object" "index_html" {
+  bucket        = aws_s3_bucket.frontend.bucket
+  key           = "index.html"
+  content       = data.template_file.index_html.rendered
+  acl           = "public-read"
+  content_type  = "text/html"
+
+  depends_on = [aws_api_gateway_deployment.deployment]
 }

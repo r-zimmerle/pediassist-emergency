@@ -1,16 +1,32 @@
 # Local Files
 config/*
 old/
-frontend/
+
+# Python
+__pycache__/
+*.pyc
 
 # Terraform
 *.tfstate
 *.tfstate.*
 .terraform/
+crash.log
 
 # AWS
 function.zip
 
-# Python
-__pycache__/
-*.pyc
+# Node Modules (se aplicável)
+node_modules/
+
+# Logs
+*.log
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# IDEs e Editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
