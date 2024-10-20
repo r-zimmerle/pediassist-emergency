@@ -1,2 +1,16 @@
+# Local Files
 config/*
 old/
+frontend/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# AWS
+function.zip
+
+# Python
+__pycache__/
+*.pyc
