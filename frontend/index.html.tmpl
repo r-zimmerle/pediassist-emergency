@@ -1,11 +1,8 @@
-<!-- frontend/index.html.tmpl -->
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>PediAssist Emergencial</title>
-    <!-- Seu CSS aqui -->
 </head>
 <body>
     <h1>PediAssist Emergencial</h1>
@@ -17,7 +14,8 @@
     <div id="resultado"></div>
 
     <script>
-        const apiEndpoint = "${apiEndpoint}";
+        // Escapando a interpolação com $$ para JavaScript
+        const apiEndpoint = "$${apiEndpoint}";
 
         document.getElementById('form-calculo').addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -34,7 +32,7 @@
                 let resultadoDiv = document.getElementById('resultado');
                 resultadoDiv.innerHTML = '<h2>Doses Calculadas:</h2>';
                 for (let [medicamento, dose] of Object.entries(data.doses)) {
-                    resultadoDiv.innerHTML += `<p><strong>${"$"}{medicamento}:</strong> ${"$"}{dose.toFixed(2)} ml (${ "$"}{data.diluicoes[medicamento]})</p>`;
+                    resultadoDiv.innerHTML += `<p><strong>${"$${medicamento}"}:</strong> ${"$${dose.toFixed(2)}"} ml (${ "$${data.diluicoes[medicamento]}"})</p>`;
                 }
             } else {
                 // Exibe mensagem de erro
