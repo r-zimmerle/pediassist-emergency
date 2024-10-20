@@ -1,0 +1,46 @@
+<!-- frontend/index.html.tmpl -->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>PediAssist Emergencial</title>
+    <!-- Seu CSS aqui -->
+</head>
+<body>
+    <h1>PediAssist Emergencial</h1>
+    <form id="form-calculo">
+        <label for="peso">Peso do paciente (kg):</label>
+        <input type="number" id="peso" name="peso" step="0.1" required>
+        <button type="submit">Calcular Doses</button>
+    </form>
+    <div id="resultado"></div>
+
+    <script>
+        const apiEndpoint = "${api_endpoint}";
+
+        document.getElementById('form-calculo').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const peso = document.getElementById('peso').value;
+            const response = await fetch(`${apiEndpoint}/calcular`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 'peso': parseFloat(peso) })
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                // Exibe os resultados de forma amigável
+                let resultadoDiv = document.getElementById('resultado');
+                resultadoDiv.innerHTML = '<h2>Doses Calculadas:</h2>';
+                for (let [medicamento, dose] of Object.entries(data.doses)) {
+                    resultadoDiv.innerHTML += `<p><strong>${medicamento}:</strong> ${dose.toFixed(2)} ml (${data.diluicoes[medicamento]})</p>`;
+                }
+            } else {
+                // Exibe mensagem de erro
+                document.getElementById('resultado').textContent = data.error;
+            }
+        });
+    </script>
+</body>
+</html>
