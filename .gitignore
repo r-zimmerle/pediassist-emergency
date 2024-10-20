@@ -11,6 +11,8 @@ __pycache__/
 *.tfstate.*
 .terraform/
 crash.log
+.terraform.lock.hcl
+
 
 # AWS
 function.zip
