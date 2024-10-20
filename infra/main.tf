@@ -206,15 +206,3 @@ resource "aws_s3_object" "index_html" {
     aws_s3_bucket_policy.frontend_policy
   ]
 }
-
-# -----------------------------
-# Outputs
-# -----------------------------
-
-output "api_endpoint" {
-  value = aws_api_gateway_deployment.deployment.invoke_url
-}
-
-output "s3_website_url" {
-  value = aws_s3_bucket.frontend.website_endpoint
-}
